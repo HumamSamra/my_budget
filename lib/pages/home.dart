@@ -33,7 +33,6 @@ class _HomepageState extends State<Homepage> {
   final box = Hive.box(boxName);
   List<dynamic> transactions = [];
   double totalBalance = 0.0;
-  String time = '';
   SortType sort = SortType.newFirst;
 
   List<ChartData> chartData = [
@@ -61,17 +60,17 @@ class _HomepageState extends State<Homepage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => const Transact(
-                                      isAdd: true,
+                                      isAdd: false,
                                     ),
                                   ));
                               getData();
                             },
-                            icon: const Icon(Icons.add)),
+                            icon: const Icon(Icons.remove)),
                         const Spacer(),
                         Column(
                           children: [
                             const SizedBox(
-                              height: 50,
+                              height: 40,
                             ),
                             Text(
                               "Balance",
@@ -80,9 +79,9 @@ class _HomepageState extends State<Homepage> {
                                   color: Theme.of(context).colorScheme.outline),
                             ),
                             Text(
-                              "\$$totalBalance",
+                              "\$${totalBalance.toStringAsFixed(2)}",
                               style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 18,
                                   color: totalBalance < 0
                                       ? Theme.of(context).colorScheme.error
                                       : null),
@@ -96,12 +95,12 @@ class _HomepageState extends State<Homepage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => const Transact(
-                                      isAdd: false,
+                                      isAdd: true,
                                     ),
                                   ));
                               getData();
                             },
-                            icon: const Icon(Icons.remove)),
+                            icon: const Icon(Icons.add)),
                       ],
                     ),
                   ),
@@ -115,10 +114,24 @@ class _HomepageState extends State<Homepage> {
                         xValueMapper: (ChartData data, _) => data.x,
                         yValueMapper: (ChartData data, _) => data.y)
                   ]),
-                  Text(
-                    time,
-                    style: const TextStyle(fontSize: 15),
-                  )
+                  StatefulBuilder(builder: (context, setState) {
+                    String time = '';
+                    updateTime() {
+                      setState(() {
+                        time = DateFormat('yyyy MMM dd, HH:mm:ss a')
+                            .format(DateTime.now());
+                      });
+                    }
+
+                    updateTime();
+
+                    Future.delayed(const Duration(seconds: 1), updateTime);
+
+                    return Text(
+                      time,
+                      style: const TextStyle(fontSize: 15),
+                    );
+                  })
                 ],
               ),
             ),
@@ -300,7 +313,6 @@ class _HomepageState extends State<Homepage> {
   @override
   void initState() {
     getData();
-    updateTime();
     super.initState();
   }
 
@@ -382,12 +394,5 @@ class _HomepageState extends State<Homepage> {
   delete(dynamic key) {
     box.delete(key);
     getData();
-  }
-
-  void updateTime() {
-    setState(() {
-      time = DateFormat('yyyy MMM dd, HH:mm:ss a').format(DateTime.now());
-    });
-    Future.delayed(const Duration(seconds: 1), updateTime);
   }
 }
